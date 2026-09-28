@@ -1,4 +1,9 @@
-import { ArgumentsHost, Catch, HttpException, HttpStatus } from '@nestjs/common';
+import {
+    ArgumentsHost,
+    Catch,
+    HttpException,
+    HttpStatus,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 import { HttpError } from '@shared/shared/infrastructure/http/dto/http-error';
 import { HTTP_ERROR_CODES } from '@shared/shared/infrastructure/http/http-error-codes';

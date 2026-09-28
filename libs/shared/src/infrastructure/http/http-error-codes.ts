@@ -10,16 +10,14 @@ import { RabbitMQNotConnectedException } from '@shared/shared/infrastructure/rab
 
 export type ExceptionClass = abstract new (...args: never[]) => Error;
 
-export const HTTP_ERROR_CODES: ReadonlyMap<ExceptionClass, HttpStatus> = new Map<
-    ExceptionClass,
-    HttpStatus
->([
-    [InvalidDateTime, HttpStatus.BAD_REQUEST],
-    [InvalidEmail, HttpStatus.BAD_REQUEST],
-    [InvalidIdentifier, HttpStatus.BAD_REQUEST],
-    [RabbitMQConnectionFailedException, HttpStatus.SERVICE_UNAVAILABLE],
-    [RabbitMQNotConnectedException, HttpStatus.SERVICE_UNAVAILABLE],
-    [DomainException, HttpStatus.BAD_REQUEST],
-    [ApplicationException, HttpStatus.CONFLICT],
-    [InfrastructureException, HttpStatus.SERVICE_UNAVAILABLE],
-]);
+export const HTTP_ERROR_CODES: ReadonlyMap<ExceptionClass, HttpStatus> =
+    new Map<ExceptionClass, HttpStatus>([
+        [InvalidDateTime, HttpStatus.BAD_REQUEST],
+        [InvalidEmail, HttpStatus.BAD_REQUEST],
+        [InvalidIdentifier, HttpStatus.BAD_REQUEST],
+        [RabbitMQConnectionFailedException, HttpStatus.SERVICE_UNAVAILABLE],
+        [RabbitMQNotConnectedException, HttpStatus.SERVICE_UNAVAILABLE],
+        [DomainException, HttpStatus.BAD_REQUEST],
+        [ApplicationException, HttpStatus.CONFLICT],
+        [InfrastructureException, HttpStatus.SERVICE_UNAVAILABLE],
+    ]);

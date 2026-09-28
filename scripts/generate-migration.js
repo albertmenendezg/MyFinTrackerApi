@@ -10,7 +10,16 @@ const migrationsDir = path.join(
     'typeorm',
     'migrations',
 );
-const dataSource = path.join('libs', 'shared', 'src', 'infrastructure', 'persistence', 'typeorm', 'data-source.ts');
+
+const dataSource = path.join(
+    'libs',
+    'shared',
+    'src',
+    'infrastructure',
+    'persistence',
+    'typeorm',
+    'data-source.ts'
+);
 
 const name = (process.argv[2] ?? 'migration').replace(/\.ts$/, '');
 const target = path.join(migrationsDir, name);

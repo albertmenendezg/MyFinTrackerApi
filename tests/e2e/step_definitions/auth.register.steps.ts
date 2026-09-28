@@ -31,7 +31,12 @@ When(
 
 When(
     'I POST \\/auth\\/register with email {string} and password {string} and unknown property {string} = {string}',
-    async (email: string, password: string, property: string, value: string) => {
+    async (
+        email: string,
+        password: string,
+        property: string,
+        value: string,
+    ) => {
         const response = await request(ctx().httpServer)
             .post('/auth/register')
             .send({ email, password, [property]: value });
