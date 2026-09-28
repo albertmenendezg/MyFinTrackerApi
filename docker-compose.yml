@@ -12,7 +12,6 @@ services:
                 condition: service_healthy
         env_file:
             - path: .env
-              required: true
         volumes:
             - ./src:/app/src
             - ./libs:/app/libs
