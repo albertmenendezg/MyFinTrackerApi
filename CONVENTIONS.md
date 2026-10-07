@@ -18,6 +18,31 @@ Detailed conventions and patterns for this repository. If you work here (agent o
 - ESLint (flat config `eslint.config.mjs`): project-aware via `projectService`. Notable rules: `@typescript-eslint/no-explicit-any` is **off**; `@typescript-eslint/no-floating-promises` is **warn**.
 - Run `npm run lint` for `src/` and `libs/`.
 
+### Destructuring inputs
+
+When a function receives an input object — a request DTO (`application/dto/`), a transport payload (`infrastructure/http/dto/`), a deserialized wire message, a token payload — **pull its fields out with a destructuring statement** at the top of the body instead of reaching through the dot operator:
+
+```ts
+// yes
+async execute(request: LoginRequest): Promise<void> {
+    const { email, password } = request;
+    …
+}
+
+// no
+async execute(request: LoginRequest): Promise<void> {
+    await this.repository.findByEmail(new UserEmail(request.email));
+    …
+}
+```
+
+This holds for a single field too (`const { refreshToken } = request;`), so the shape of a use case does not depend on how many fields the input happens to have.
+
+The rule does **not** apply to:
+
+- **Framework objects** owned by the library, e.g. the Express `Request`/`Response` (`request.url`, `request.cookies?.[name]`, `response.cookie(...)`).
+- **Domain value objects and entities**, e.g. `user.id.toString()`, `entity.expiresAt.value` — property access is the domain API; wrapping a single read in a destructuring statement adds noise without adding clarity.
+
 ## 3. Module resolution & imports
 
 - **Aliases** (tsconfig `paths`) are mandatory — never use long relative imports:
@@ -25,10 +50,10 @@ Detailed conventions and patterns for this repository. If you work here (agent o
   | Alias | Target |
   |-------|--------|
   | `@auth/*` | `src/auth/*` |
-  | `@shared/shared` | `libs/shared/src` |
-  | `@shared/shared/*` | `libs/shared/src/*` |
+  | `@shared/` | `libs/shared/src` |
+  | `@shared/*` | `libs/shared/src/*` |
 
-  The shared library alias is `@shared/shared`, **not** `@shared`.
+  The shared library alias is `@shared/`, **not** `@shared`.
 
 - **CommonJS:** no `"type": "module"`, no `.js` extensions in imports, no `moduleResolution: bundler`. `src/main.ts` imports `tsconfig-paths/register` so the runtime resolves aliases.
 
@@ -131,9 +156,9 @@ The PostgreSQL data source is owned by `SharedModule` and configured **once**:
 
 **Schema** is managed with **migrations**, not sync (`synchronize: false` in the data source — there is no `DB_SYNCHRONIZE` env):
 
-- Migrations live in `libs/shared/src/infrastructure/persistence/typeorm/migrations/` (one `class …Migration implements MigrationInterface` per file, pure `queryRunner.query` SQL) and are **auto-detected via a TypeORM glob pattern** (`path.join(__dirname, '…/migrations', '*.{ts,js}')`) — no manual registration:
-  - The **CLI data source** (`data-source.ts`, run with `tsx`) resolves `__dirname` to the *source* directory, so it sees `*.ts` migration files as they are written.
-  - `SharedModule.forRootAsync` resolves the glob against the **compiled output** (`__dirname` of the built `shared.module.js`). That only yields files when the build preserves the directory layout (plain `tsc`); the webpack bundle (`nest build`/`start:dev`) inlines no migrations, so `DB_MIGRATIONS_RUN=true` is a **no-op there** — always drive migrations through the CLI (below). e2e is the exception: ts-node runs the sources in place, so there the glob resolves against the source tree.
+- Migrations live in `libs/shared/src/infrastructure/persistence/typeorm/migrations/` (one `class …Migration implements MigrationInterface` per file, pure `queryRunner.query` SQL) and are **registered in the barrel** `…/typeorm/migrations/index.ts`, which both `SharedModule.forRootAsync` and the CLI `data-source.ts` import:
+  - They are passed as **classes**, not as a file glob: TypeORM instantiates them (`ConnectionMetadataBuilder.buildMigrations`) and derives each timestamp from the trailing digits of the class name, so execution order matches the filename. Being real imports, webpack inlines them into the bundle — which is why a `*.{ts,js}` glob does not work: inside the bundle `__dirname` is `dist/` and no migration file is ever emitted there, so TypeORM silently matches nothing.
+  - **A newly generated migration must be added to `migrations/index.ts`** or neither the app nor the CLI will see it.
 - The CLI is the single source of truth for schema changes and must run **inside the `api` container** (the `.env` points `DB_HOST=postgres` at compose service names, resolvable only inside the compose network):
   ```bash
   docker compose exec api npm run migration:generate            # auto-names <timestamp>-migration.ts
@@ -142,8 +167,8 @@ The PostgreSQL data source is owned by `SharedModule` and configured **once**:
   docker compose exec api npm run migration:revert              # undo the last one
   ```
   - `migration:generate` diffs the live DB against the entities and writes `<timestamp>-<name>.ts` (class `PascalCase(name) + timestamp`). It **exits non-zero with “No changes in database schema were found”** when the schema is already in sync — that is expected, not an error. Migrations must reflect **TypeORM-native DDL** (e.g. `CONSTRAINT "UQ_…" UNIQUE ("email")` for a `@Column({ unique: true })`, not a standalone `CREATE UNIQUE INDEX`) or every generate run will emit a spurious diff.
-  - Files land on the host through the bind mounts (`libs/` and `scripts/`), so a freshly generated migration is immediately visible in the repo.
-- `DB_MIGRATIONS_RUN=true` makes the app run pending migrations automatically at bootstrap (`migrationsRun` in `forRootAsync`, using the same `migrations` array) — as long as the build preserves the migrations directory (see the glob note above).
+  - Files land on the host through the bind mounts (`libs/` and `scripts/`), so a freshly generated migration is immediately visible in the repo — register its class in `migrations/index.ts` before running `migration:run`.
+- `DB_MIGRATIONS_RUN=true` makes the app run pending migrations automatically at bootstrap (`migrationsRun` in `forRootAsync`, using the same `migrations` array). The migration classes are part of the code, so this behaves identically under ts-node (e2e), under the webpack dev bundle and in the production image.
 
 Per aggregate, three files under `src/<bc>/infrastructure/persistence/typeorm/`:
 
@@ -157,9 +182,9 @@ Timestamps are UTC: use **`timestamptz`** columns (not naive `datetime`) so Type
 
 Use **custom exceptions that extend the shared base classes** whenever possible, instead of throwing raw `Error`:
 
-- **`DomainException`** — `@shared/shared/domain/exceptions/domain-exception`; domain invariants (e.g. `InvalidEmail`, `InvalidIdentifier`, `InvalidPassword`).
-- **`ApplicationException`** — `@shared/shared/application/exceptions/application-exception`; use-case/application-level failures.
-- **`InfrastructureException`** — `@shared/shared/infrastructure/exceptions/infrastructure-exception`; adapter/infra failures (e.g. `RabbitMQConnectionFailedException`, `RabbitMQNotConnectedException`).
+- **`DomainException`** — `@shared/domain/exceptions/domain-exception`; domain invariants (e.g. `InvalidEmail`, `InvalidIdentifier`, `InvalidPassword`).
+- **`ApplicationException`** — `@shared/application/exceptions/application-exception`; use-case/application-level failures.
+- **`InfrastructureException`** — `@shared/infrastructure/exceptions/infrastructure-exception`; adapter/infra failures (e.g. `RabbitMQConnectionFailedException`, `RabbitMQNotConnectedException`).
 
 Guidelines:
 
@@ -175,7 +200,7 @@ Guidelines:
 
 ## 9. RabbitMQ & domain events
 
-- **Event model:** extend `DomainEvent` from `@shared/shared/domain/events/domain-event` (`aggregateId`, `body`, `eventId`, `occurredOn`, plus abstract `eventName(): string`). Keep events in `domain/events/` of the owning BC.
+- **Event model:** extend `DomainEvent` from `@shared/domain/events/domain-event` (`aggregateId`, `body`, `eventId`, `occurredOn`, plus abstract `eventName(): string`). Keep events in `domain/events/` of the owning BC.
 - **Wire format** (topic exchange, event name as routing key):
 
   ```json
@@ -206,7 +231,7 @@ Tests live under `tests/`, split by scope:
 - **Unit tests:** `tests/unit/**/*.spec.ts` (vitest, aliases resolved via `vite-tsconfig-paths`, config in `vitest.config.ts`). Mirror the source path under `tests/unit/` (e.g. `tests/unit/src/auth/…`). Mock external I/O; prefer exercising pure functions/usecases.
 - **E2E tests:** `tests/e2e/` with **Cucumber** (`@cucumber/cucumber`) + **Testcontainers** + supertest:
   - Gherkin features in `tests/e2e/features/`, step definitions in `tests/e2e/step_definitions/`, bootstrap in `tests/e2e/support/` (`context.ts` starts PostgreSQL + RabbitMQ containers and boots the real Nest app in-process; `hooks.ts` truncates `users` between scenarios).
-  - `DB_MIGRATIONS_RUN=true` builds the schema from migrations; no `synchronize`. ts-node executes the real `.ts` files, so `__dirname` is the source tree and TypeORM's `*.{ts,js}` glob picks the `.ts` migrations directly.
+  - `DB_MIGRATIONS_RUN=true` builds the schema from migrations; no `synchronize`. ts-node loads the barrel and the real `.ts` migration classes in place.
   - `cucumber.js` runs the `.ts` sources **in place** — `requireModule: ['ts-node/register', 'tsconfig-paths/register']` plus `require` on the `tests/e2e/**/*.ts` globs. `npm run test:e2e` is therefore just `cucumber-js`: no precompile, no `dist-e2e/`, no `tsconfig.e2e.json`, and always the current working tree. Two rules follow: load support/step files with `require`, never `import` (both hooks are CommonJS-only and `import` would bypass them); and never swap ts-node for tsx/esbuild — only tsc honours `emitDecoratorMetadata`, and without the resulting `design:paramtypes` Nest DI injects `undefined` and `NestFactory.create` aborts with `process.exit(1)` and no output. ts-node type-checks as it goes (no `TS_NODE_TRANSPILE_ONLY`) and reads `tsconfig.json`, so run `npx tsc --noEmit` before pushing e2e changes.
 - Run with `npm test` (unit) / `npm run test:e2e` (cucumber + testcontainers) / `npm run test:cov` (unit coverage).
 
