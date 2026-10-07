@@ -5,6 +5,7 @@ Feature: User registration
     When I POST /auth/register with email "john@doe.xyz" and password "S3cur3Pass!"
     Then the response status is 201
     And the user with email "john@doe.xyz" is persisted
+    And the credentials for email "john@doe.xyz" are persisted
 
   Scenario: Registering a duplicate email is rejected
     Given a user with email "john@doe.xyz" already exists

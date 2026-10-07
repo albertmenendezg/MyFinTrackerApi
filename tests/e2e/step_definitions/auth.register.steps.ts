@@ -14,8 +14,10 @@ Given('no user with email {string} exists', async (email: string) => {
 
 Given('a user with email {string} already exists', async (email: string) => {
     await ctx().dataSource.query(
-        'INSERT INTO users (id, email, password, created_at, updated_at) VALUES ($1, $2, $3, now(), now())',
-        [randomUUID(), email, 'already-hashed-password'],
+        `INSERT INTO users
+            (id, email, name, preferred_currency, roles, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, now(), now())`,
+        [randomUUID(), email, 'John Doe', 'EUR', JSON.stringify(['user'])],
     );
 });
 
@@ -24,7 +26,12 @@ When(
     async (email: string, password: string) => {
         const response = await request(ctx().httpServer)
             .post('/auth/register')
-            .send({ email, password });
+            .send({
+                email,
+                password,
+                name: 'John Doe',
+                preferredCurrency: 'EUR',
+            });
         ctx().lastResponse = response;
     },
 );
@@ -39,7 +46,13 @@ When(
     ) => {
         const response = await request(ctx().httpServer)
             .post('/auth/register')
-            .send({ email, password, [property]: value });
+            .send({
+                email,
+                password,
+                name: 'John Doe',
+                preferredCurrency: 'EUR',
+                [property]: value,
+            });
         ctx().lastResponse = response;
     },
 );
@@ -55,6 +68,20 @@ Then('the user with email {string} is persisted', async (email: string) => {
     );
     assert.strictEqual(rows.length, 1);
 });
+
+Then(
+    'the credentials for email {string} are persisted',
+    async (email: string) => {
+        const rows = await ctx().dataSource.query(
+            `SELECT ac.id
+               FROM auth_credentials ac
+               JOIN users u ON u.id = ac.user_id
+              WHERE u.email = $1`,
+            [email],
+        );
+        assert.strictEqual(rows.length, 1);
+    },
+);
 
 Then('the error message says {string}', (fragment: string) => {
     const message = ctx().lastResponse?.body?.message ?? '';

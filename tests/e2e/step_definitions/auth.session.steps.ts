@@ -56,7 +56,12 @@ Given(
     async (email: string, password: string) => {
         const response = await request(ctx().httpServer)
             .post('/auth/register')
-            .send({ email, password });
+            .send({
+                email,
+                password,
+                name: 'John Doe',
+                preferredCurrency: 'EUR',
+            });
         assert.strictEqual(response.status, 201);
     },
 );
