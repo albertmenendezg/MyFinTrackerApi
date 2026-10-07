@@ -2,9 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '@auth/domain/user';
+import { UserId } from '@auth/domain/value-objects/user-id';
 import { UserRepository } from '@auth/domain/repository/user.repository';
 import { TypeormUserMapper } from '@auth/infrastructure/persistence/typeorm/mappers/typeorm-user.mapper';
 import { UserEntity } from '@auth/infrastructure/persistence/typeorm/entities/user.entity';
+import { UserEmail } from '@auth/domain/value-objects/user-email';
 
 @Injectable()
 export class TypeormUserRepository implements UserRepository {
@@ -19,9 +21,16 @@ export class TypeormUserRepository implements UserRepository {
         await this.repository.save(entity);
     }
 
-    async findByEmail(email: string): Promise<User | null> {
+    async findByEmail(email: UserEmail): Promise<User | null> {
         const entity = await this.repository.findOne({
-            where: { email },
+            where: { email: email.value },
+        });
+        return entity ? this.mapper.toDomain(entity) : null;
+    }
+
+    async findById(id: UserId): Promise<User | null> {
+        const entity = await this.repository.findOne({
+            where: { id: id.value },
         });
         return entity ? this.mapper.toDomain(entity) : null;
     }

@@ -15,7 +15,7 @@ import {
 import {
     DOMAIN_EVENT_PUBLISHER,
     DomainEventPublisher,
-} from '@shared/shared/domain/events/domain-event-publisher';
+} from '@shared/domain/events/domain-event-publisher';
 import { UserWithEmailAlreadyExists } from '@auth/application/exceptions/user-with-email-already-exists';
 
 @Injectable()
@@ -32,7 +32,9 @@ export class CreateUserUseCase {
     async execute(request: CreateUserRequest): Promise<void> {
         const { email, password } = request;
 
-        const userExistsByEmail = await this.repository.findByEmail(email);
+        const userExistsByEmail = await this.repository.findByEmail(
+            new UserEmail(email),
+        );
 
         if (userExistsByEmail) {
             throw new UserWithEmailAlreadyExists(email);

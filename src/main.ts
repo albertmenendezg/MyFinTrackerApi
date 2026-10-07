@@ -2,15 +2,19 @@ import 'tsconfig-paths/register';
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { createValidationPipe } from '@shared/shared/infrastructure/http/validation-pipe';
+import cookieParser from 'cookie-parser';
+import { createValidationPipe } from '@shared/infrastructure/http/validation-pipe';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
     const config = app.get(ConfigService);
 
+    app.use(cookieParser());
+
     app.enableCors({
-        origin: '*',
+        origin: config.getOrThrow<string>('app.corsOrigin'),
+        credentials: true,
     });
 
     app.useGlobalPipes(createValidationPipe());
@@ -19,6 +23,10 @@ async function bootstrap() {
         .setTitle('MyFinTracker API')
         .setDescription('Personal finance API organized in bounded contexts')
         .setVersion('0.0.1')
+        .addCookieAuth(config.getOrThrow<string>('auth.cookies.access.name'), {
+            type: 'apiKey',
+            in: 'cookie',
+        })
         .build();
     const document = SwaggerModule.createDocument(app, swaggerConfig);
     SwaggerModule.setup('docs', app, document);
