@@ -1,3 +1,3 @@
-import { DateTime } from '@shared/shared/domain/value-objects/date-time';
+import { DateTime } from '@shared/domain/value-objects/date-time';
 
 export class UserCreatedAt extends DateTime {}

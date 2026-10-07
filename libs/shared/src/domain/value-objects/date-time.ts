@@ -1,4 +1,4 @@
-import { InvalidDateTime } from '@shared/shared/domain/exceptions/invalid-datetime';
+import { InvalidDateTime } from '@shared/domain/exceptions/invalid-datetime';
 
 export abstract class DateTime {
     public readonly value: Date;

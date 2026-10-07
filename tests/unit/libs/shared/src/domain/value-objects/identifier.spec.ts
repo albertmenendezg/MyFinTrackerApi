@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { validate } from 'uuid';
-import { Identifier } from '@shared/shared/domain/value-objects/identifier';
-import { InvalidIdentifier } from '@shared/shared/domain/exceptions/invalid-identifier';
+import { Identifier } from '@shared/domain/value-objects/identifier';
+import { InvalidIdentifier } from '@shared/domain/exceptions/invalid-identifier';
 
 describe('Identifier', () => {
     const uuid = '123e4567-e89b-12d3-a456-426614174000';

@@ -1,4 +1,4 @@
-import { InvalidEmail } from '@shared/shared/domain/exceptions/invalid-email';
+import { InvalidEmail } from '@shared/domain/exceptions/invalid-email';
 
 export abstract class Email {
     public readonly value: string;

@@ -3,7 +3,7 @@ import { UserEmail } from '@auth/domain/value-objects/user-email';
 import { UserPassword } from '@auth/domain/value-objects/user-password';
 import { UserUpdatedAt } from '@auth/domain/value-objects/user-updated-at';
 import { UserCreatedAt } from '@auth/domain/value-objects/user-created-at';
-import { AggregateRoot } from '@shared/shared/domain/aggregate-root';
+import { AggregateRoot } from '@shared/domain/aggregate-root';
 import { UserCreatedEvent } from '@auth/domain/events/user-created.event';
 
 export class User extends AggregateRoot {

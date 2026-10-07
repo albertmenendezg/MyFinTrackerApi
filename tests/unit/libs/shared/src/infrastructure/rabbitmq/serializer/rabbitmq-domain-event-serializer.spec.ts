@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { UserCreatedEvent } from '@auth/domain/events/user-created.event';
-import { RabbitmqDomainEventSerializer } from '@shared/shared/infrastructure/rabbitmq/serializer/rabbitmq-domain-event-serializer';
+import { RabbitmqDomainEventSerializer } from '@shared/infrastructure/rabbitmq/serializer/rabbitmq-domain-event-serializer';
 
 describe('RabbitmqDomainEventSerializer', () => {
     it('serializes a domain event to the wire format', () => {

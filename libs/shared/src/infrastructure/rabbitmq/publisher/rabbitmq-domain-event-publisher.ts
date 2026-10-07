@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { DomainEvent } from '@shared/shared/domain/events/domain-event';
-import { DomainEventPublisher } from '@shared/shared/domain/events/domain-event-publisher';
-import { RabbitmqDomainEventSerializer } from '@shared/shared/infrastructure/rabbitmq/serializer/rabbitmq-domain-event-serializer';
-import { RabbitMQClient } from '@shared/shared/infrastructure/rabbitmq/client/rabbitmq-client.service';
+import { DomainEvent } from '@shared/domain/events/domain-event';
+import { DomainEventPublisher } from '@shared/domain/events/domain-event-publisher';
+import { RabbitmqDomainEventSerializer } from '@shared/infrastructure/rabbitmq/serializer/rabbitmq-domain-event-serializer';
+import { RabbitMQClient } from '@shared/infrastructure/rabbitmq/client/rabbitmq-client.service';
 
 @Injectable()
 export class RabbitMqDomainEventPublisher implements DomainEventPublisher {

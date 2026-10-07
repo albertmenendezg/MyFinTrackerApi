@@ -1,5 +1,5 @@
 import { v4, validate } from 'uuid';
-import { InvalidIdentifier } from '@shared/shared/domain/exceptions/invalid-identifier';
+import { InvalidIdentifier } from '@shared/domain/exceptions/invalid-identifier';
 
 export class Identifier {
     public readonly value: string;

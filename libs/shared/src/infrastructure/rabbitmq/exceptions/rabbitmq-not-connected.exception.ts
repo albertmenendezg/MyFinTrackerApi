@@ -1,4 +1,4 @@
-import { InfrastructureException } from '@shared/shared/infrastructure/exceptions/infrastructure-exception';
+import { InfrastructureException } from '@shared/infrastructure/exceptions/infrastructure-exception';
 
 export class RabbitMQNotConnectedException extends InfrastructureException {
     constructor() {

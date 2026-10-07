@@ -1,4 +1,4 @@
-import { ApplicationException } from '@shared/shared/application/exceptions/application-exception';
+import { ApplicationException } from '@shared/application/exceptions/application-exception';
 
 export class UserWithEmailAlreadyExists extends ApplicationException {
     constructor(email: string) {

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { DomainEvent } from '@shared/shared/domain/events/domain-event';
-import { DomainEventHandler } from '@shared/shared/domain/events/domain-event-handler';
+import { DomainEvent } from '@shared/domain/events/domain-event';
+import { DomainEventHandler } from '@shared/domain/events/domain-event-handler';
 
 @Injectable()
 export class DomainEventDispatcher {

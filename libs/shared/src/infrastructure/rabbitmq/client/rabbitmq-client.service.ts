@@ -1,8 +1,8 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Channel, ChannelModel, connect, Message } from 'amqplib';
-import { RabbitMQConnectionFailedException } from '@shared/shared/infrastructure/rabbitmq/exceptions/rabbitmq-connection-failed.exception';
-import { RabbitMQNotConnectedException } from '@shared/shared/infrastructure/rabbitmq/exceptions/rabbitmq-not-connected.exception';
+import { RabbitMQConnectionFailedException } from '@shared/infrastructure/rabbitmq/exceptions/rabbitmq-connection-failed.exception';
+import { RabbitMQNotConnectedException } from '@shared/infrastructure/rabbitmq/exceptions/rabbitmq-not-connected.exception';
 
 @Injectable()
 export class RabbitMQClient implements OnModuleInit, OnModuleDestroy {

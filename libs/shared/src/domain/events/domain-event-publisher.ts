@@ -1,4 +1,4 @@
-import { DomainEvent } from '@shared/shared/domain/events/domain-event';
+import { DomainEvent } from '@shared/domain/events/domain-event';
 
 export const DOMAIN_EVENT_PUBLISHER = 'domain-event-publisher';
 

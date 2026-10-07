@@ -1,11 +1,11 @@
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { DiscoveryService } from '@nestjs/core';
-import { DomainEventDispatcher } from '@shared/shared/application/events/domain-event-dispatcher';
-import { DomainEventConsumer } from '@shared/shared/application/events/domain-event-consumer';
-import { DomainEvent } from '@shared/shared/domain/events/domain-event';
-import { DomainEventHandler } from '@shared/shared/domain/events/domain-event-handler';
-import { RabbitmqDomainEventDeserializer } from '@shared/shared/infrastructure/rabbitmq/serializer/rabbitmq-domain-event-deserializer';
-import { RabbitMQClient } from '@shared/shared/infrastructure/rabbitmq/client/rabbitmq-client.service';
+import { DomainEventDispatcher } from '@shared/application/events/domain-event-dispatcher';
+import { DomainEventConsumer } from '@shared/application/events/domain-event-consumer';
+import { DomainEvent } from '@shared/domain/events/domain-event';
+import { DomainEventHandler } from '@shared/domain/events/domain-event-handler';
+import { RabbitmqDomainEventDeserializer } from '@shared/infrastructure/rabbitmq/serializer/rabbitmq-domain-event-deserializer';
+import { RabbitMQClient } from '@shared/infrastructure/rabbitmq/client/rabbitmq-client.service';
 
 @Injectable()
 export class RabbitmqDomainEventConsumerRegistrar implements OnApplicationBootstrap {

@@ -5,8 +5,8 @@ import {
     HttpStatus,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { HttpError } from '@shared/shared/infrastructure/http/dto/http-error';
-import { HTTP_ERROR_CODES } from '@shared/shared/infrastructure/http/http-error-codes';
+import { HttpError } from '@shared/infrastructure/http/dto/http-error';
+import { HTTP_ERROR_CODES } from '@shared/infrastructure/http/http-error-codes';
 
 @Catch(Error)
 export class GlobalHttpExceptionHandler {

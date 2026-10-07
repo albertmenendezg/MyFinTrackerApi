@@ -1,5 +1,5 @@
 import { DiscoveryService } from '@nestjs/core';
-import { DomainEvent } from '@shared/shared/domain/events/domain-event';
+import { DomainEvent } from '@shared/domain/events/domain-event';
 
 export interface DomainEventClass {
     new (...args: any[]): DomainEvent;

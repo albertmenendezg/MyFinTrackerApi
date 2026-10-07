@@ -1,4 +1,4 @@
-import { DomainException } from '@shared/shared/domain/exceptions/domain-exception';
+import { DomainException } from '@shared/domain/exceptions/domain-exception';
 
 export class InvalidIdentifier extends DomainException {
     constructor(id: any) {

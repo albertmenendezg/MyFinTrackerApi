@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { DateTime } from '@shared/shared/domain/value-objects/date-time';
-import { InvalidDateTime } from '@shared/shared/domain/exceptions/invalid-datetime';
+import { DateTime } from '@shared/domain/value-objects/date-time';
+import { InvalidDateTime } from '@shared/domain/exceptions/invalid-datetime';
 
 class FixedDateTime extends DateTime {}
 

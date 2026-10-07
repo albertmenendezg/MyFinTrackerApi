@@ -4,12 +4,12 @@ import {
     BadRequestException,
     NotFoundException,
 } from '@nestjs/common';
-import { GlobalHttpExceptionHandler } from '@shared/shared/infrastructure/http/filters/global-http-exception-handler';
+import { GlobalHttpExceptionHandler } from '@shared/infrastructure/http/filters/global-http-exception-handler';
 import { InvalidPassword } from '@auth/domain/exceptions/invalid-password';
 import { UserWithEmailAlreadyExists } from '@auth/application/exceptions/user-with-email-already-exists';
-import { InvalidDateTime } from '@shared/shared/domain/exceptions/invalid-datetime';
-import { RabbitMQConnectionFailedException } from '@shared/shared/infrastructure/rabbitmq/exceptions/rabbitmq-connection-failed.exception';
-import { RabbitMQNotConnectedException } from '@shared/shared/infrastructure/rabbitmq/exceptions/rabbitmq-not-connected.exception';
+import { InvalidDateTime } from '@shared/domain/exceptions/invalid-datetime';
+import { RabbitMQConnectionFailedException } from '@shared/infrastructure/rabbitmq/exceptions/rabbitmq-connection-failed.exception';
+import { RabbitMQNotConnectedException } from '@shared/infrastructure/rabbitmq/exceptions/rabbitmq-not-connected.exception';
 
 function mockHttpHost(): {
     host: ArgumentsHost;

@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import {
     createValidationPipe,
     validationMessages,
-} from '@shared/shared/infrastructure/http/validation-pipe';
+} from '@shared/infrastructure/http/validation-pipe';
 
 class PayloadDto {
     @IsEmail()

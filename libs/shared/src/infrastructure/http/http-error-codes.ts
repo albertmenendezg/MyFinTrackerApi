@@ -1,12 +1,12 @@
 import { HttpStatus } from '@nestjs/common';
-import { ApplicationException } from '@shared/shared/application/exceptions/application-exception';
-import { DomainException } from '@shared/shared/domain/exceptions/domain-exception';
-import { InvalidDateTime } from '@shared/shared/domain/exceptions/invalid-datetime';
-import { InvalidEmail } from '@shared/shared/domain/exceptions/invalid-email';
-import { InvalidIdentifier } from '@shared/shared/domain/exceptions/invalid-identifier';
-import { InfrastructureException } from '@shared/shared/infrastructure/exceptions/infrastructure-exception';
-import { RabbitMQConnectionFailedException } from '@shared/shared/infrastructure/rabbitmq/exceptions/rabbitmq-connection-failed.exception';
-import { RabbitMQNotConnectedException } from '@shared/shared/infrastructure/rabbitmq/exceptions/rabbitmq-not-connected.exception';
+import { ApplicationException } from '@shared/application/exceptions/application-exception';
+import { DomainException } from '@shared/domain/exceptions/domain-exception';
+import { InvalidDateTime } from '@shared/domain/exceptions/invalid-datetime';
+import { InvalidEmail } from '@shared/domain/exceptions/invalid-email';
+import { InvalidIdentifier } from '@shared/domain/exceptions/invalid-identifier';
+import { InfrastructureException } from '@shared/infrastructure/exceptions/infrastructure-exception';
+import { RabbitMQConnectionFailedException } from '@shared/infrastructure/rabbitmq/exceptions/rabbitmq-connection-failed.exception';
+import { RabbitMQNotConnectedException } from '@shared/infrastructure/rabbitmq/exceptions/rabbitmq-not-connected.exception';
 
 export type ExceptionClass = abstract new (...args: never[]) => Error;
 
