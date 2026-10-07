@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { User } from '@auth/domain/user';
+import { AuthCredential } from '@auth/domain/auth-credential';
 import { RefreshToken } from '@auth/domain/refresh-token';
 import { RefreshTokenId } from '@auth/domain/value-objects/refresh-token-id';
 import { RefreshTokenHash } from '@auth/domain/value-objects/refresh-token-hash';
@@ -34,13 +34,15 @@ export class TokenIssuerService {
         private readonly domainEventPublisher: DomainEventPublisher,
     ) {}
 
-    async issue(user: User): Promise<IssuedTokens> {
-        const accessTokenData = await this.tokenService.signAccessToken(user);
-        const refreshTokenData = await this.tokenService.signRefreshToken(user);
+    async issue(credential: AuthCredential): Promise<IssuedTokens> {
+        const accessTokenData =
+            await this.tokenService.signAccessToken(credential);
+        const refreshTokenData =
+            await this.tokenService.signRefreshToken(credential);
 
         const refreshToken = RefreshToken.create(
             RefreshTokenId.random(),
-            user.id,
+            credential.userId,
             this.hashToken(refreshTokenData.token),
             refreshTokenData.expiresIn,
         );

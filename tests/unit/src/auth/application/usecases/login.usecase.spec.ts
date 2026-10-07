@@ -3,12 +3,16 @@ import { LoginUseCase } from '@auth/application/usecases/login.usecase';
 import { LoginRequest } from '@auth/application/dto/login.request';
 import { InvalidCredentials } from '@auth/application/exceptions/invalid-credentials';
 import { TokenIssuerService } from '@auth/application/services/token-issuer.service';
-import { User } from '@auth/domain/user';
-import { UserId } from '@auth/domain/value-objects/user-id';
-import { UserEmail } from '@auth/domain/value-objects/user-email';
-import { UserPassword } from '@auth/domain/value-objects/user-password';
-import { UserRepository } from '@auth/domain/repository/user.repository';
+import { AuthCredential } from '@auth/domain/auth-credential';
+import { AuthCredentialPassword } from '@auth/domain/value-objects/auth-credential-password';
+import { AuthCredentialRepository } from '@auth/domain/repository/auth-credential.repository';
 import { PasswordHasherService } from '@auth/domain/services/password-hasher.service';
+import { User } from '@users/domain/user';
+import { UserEmail } from '@users/domain/value-objects/user-email';
+import { UserId } from '@users/domain/value-objects/user-id';
+import { UserName } from '@users/domain/value-objects/user-name';
+import { Currency } from '@shared/domain/value-objects/currency';
+import { UserRepository } from '@users/domain/repository/user.repository';
 
 describe('LoginUseCase', () => {
     const userRepository = {
@@ -16,6 +20,11 @@ describe('LoginUseCase', () => {
         findByEmail: vi.fn(),
         findById: vi.fn(),
     } as unknown as UserRepository;
+
+    const credentialRepository = {
+        save: vi.fn(),
+        findByUserId: vi.fn(),
+    } as unknown as AuthCredentialRepository;
 
     const passwordHasher = {
         hash: vi.fn(),
@@ -29,6 +38,7 @@ describe('LoginUseCase', () => {
 
     const useCase = new LoginUseCase(
         userRepository,
+        credentialRepository,
         passwordHasher,
         tokenIssuer,
     );
@@ -36,7 +46,12 @@ describe('LoginUseCase', () => {
     const user = User.create(
         UserId.random(),
         new UserEmail('john@doe.xyz'),
-        new UserPassword('hashed-password'),
+        new UserName('John Doe'),
+        new Currency('EUR'),
+    );
+    const credential = AuthCredential.create(
+        user.id,
+        new AuthCredentialPassword('hashed-password'),
     );
 
     beforeEach(() => {
@@ -44,6 +59,9 @@ describe('LoginUseCase', () => {
         (
             userRepository.findByEmail as ReturnType<typeof vi.fn>
         ).mockResolvedValue(user);
+        (
+            credentialRepository.findByUserId as ReturnType<typeof vi.fn>
+        ).mockResolvedValue(credential);
         (passwordHasher.verify as ReturnType<typeof vi.fn>).mockResolvedValue(
             true,
         );
@@ -61,11 +79,12 @@ describe('LoginUseCase', () => {
         expect(userRepository.findByEmail).toHaveBeenCalledWith(
             new UserEmail('john@doe.xyz'),
         );
+        expect(credentialRepository.findByUserId).toHaveBeenCalledWith(user.id);
         expect(passwordHasher.verify).toHaveBeenCalledWith(
             'S3cur3Pass!',
             'hashed-password',
         );
-        expect(tokenIssuer.issue).toHaveBeenCalledWith(user);
+        expect(tokenIssuer.issue).toHaveBeenCalledWith(credential);
         expect(tokens).toEqual({
             accessToken: { token: 'access-token', expiresIn: 900 },
             refreshToken: { token: 'refresh-token', expiresIn: 604800 },
@@ -75,6 +94,20 @@ describe('LoginUseCase', () => {
     it('rejects an unknown email without verifying the password', async () => {
         (
             userRepository.findByEmail as ReturnType<typeof vi.fn>
+        ).mockResolvedValue(null);
+
+        await expect(
+            useCase.execute(new LoginRequest('john@doe.xyz', 'S3cur3Pass!')),
+        ).rejects.toBeInstanceOf(InvalidCredentials);
+
+        expect(credentialRepository.findByUserId).not.toHaveBeenCalled();
+        expect(passwordHasher.verify).not.toHaveBeenCalled();
+        expect(tokenIssuer.issue).not.toHaveBeenCalled();
+    });
+
+    it('rejects when the user has no credentials', async () => {
+        (
+            credentialRepository.findByUserId as ReturnType<typeof vi.fn>
         ).mockResolvedValue(null);
 
         await expect(

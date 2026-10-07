@@ -1,14 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TokenIssuerService } from '@auth/application/services/token-issuer.service';
 import { IssuedTokens } from '@auth/application/dto/issued-tokens';
-import { User } from '@auth/domain/user';
-import { UserId } from '@auth/domain/value-objects/user-id';
-import { UserEmail } from '@auth/domain/value-objects/user-email';
-import { UserPassword } from '@auth/domain/value-objects/user-password';
+import { AuthCredential } from '@auth/domain/auth-credential';
+import { AuthCredentialPassword } from '@auth/domain/value-objects/auth-credential-password';
 import { RefreshToken } from '@auth/domain/refresh-token';
 import { RefreshTokenRepository } from '@auth/domain/repository/refresh-token.repository';
 import { TokenService } from '@auth/domain/services/token.service';
 import { RefreshTokenHasherService } from '@auth/domain/services/refresh-token-hasher.service';
+import { UserId } from '@users/domain/value-objects/user-id';
 import { DomainEventPublisher } from '@shared/domain/events/domain-event-publisher';
 import { DomainEvent } from '@shared/domain/events/domain-event';
 
@@ -41,10 +40,9 @@ describe('TokenIssuerService', () => {
         publisher,
     );
 
-    const user = User.create(
+    const credential = AuthCredential.create(
         UserId.random(),
-        new UserEmail('john@doe.xyz'),
-        new UserPassword('S3cur3Pass!'),
+        new AuthCredentialPassword('S3cur3Pass!'),
     );
 
     beforeEach(() => {
@@ -67,7 +65,7 @@ describe('TokenIssuerService', () => {
     });
 
     it('signs both tokens and returns them', async () => {
-        const tokens = await service.issue(user);
+        const tokens = await service.issue(credential);
 
         expect(tokens).toBeInstanceOf(IssuedTokens);
         expect(tokens.accessToken).toEqual({
@@ -81,7 +79,7 @@ describe('TokenIssuerService', () => {
     });
 
     it('persists the hashed refresh token with the signed ttl', async () => {
-        await service.issue(user);
+        await service.issue(credential);
 
         expect(refreshTokenHasher.hash).toHaveBeenCalledWith('refresh-token');
         expect(refreshTokenRepository.save).toHaveBeenCalledTimes(1);
@@ -90,7 +88,7 @@ describe('TokenIssuerService', () => {
             .mock.calls[0][0] as RefreshToken;
         expect(saved).toBeInstanceOf(RefreshToken);
         expect(saved.tokenHash.toString()).toBe(HASH);
-        expect(saved.userId.toString()).toBe(user.id.toString());
+        expect(saved.userId.toString()).toBe(credential.userId.toString());
         expect(saved.isActive()).toBe(true);
         expect(
             saved.expiresAt.value.getTime() - saved.createdAt.value.getTime(),
@@ -98,7 +96,7 @@ describe('TokenIssuerService', () => {
     });
 
     it('never stores the raw refresh token', async () => {
-        await service.issue(user);
+        await service.issue(credential);
 
         const saved = (refreshTokenRepository.save as ReturnType<typeof vi.fn>)
             .mock.calls[0][0] as RefreshToken;
@@ -118,7 +116,7 @@ describe('TokenIssuerService', () => {
     });
 
     it('publishes the created event after saving', async () => {
-        await service.issue(user);
+        await service.issue(credential);
 
         expect(publisher.publish).toHaveBeenCalledTimes(1);
         const events = (publisher.publish as ReturnType<typeof vi.fn>).mock
@@ -128,7 +126,7 @@ describe('TokenIssuerService', () => {
     });
 
     it('drains the recorded events so they are not published twice', async () => {
-        await service.issue(user);
+        await service.issue(credential);
 
         const saved = (refreshTokenRepository.save as ReturnType<typeof vi.fn>)
             .mock.calls[0][0] as RefreshToken;

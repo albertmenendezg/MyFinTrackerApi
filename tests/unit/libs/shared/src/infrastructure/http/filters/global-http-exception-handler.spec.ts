@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { GlobalHttpExceptionHandler } from '@shared/infrastructure/http/filters/global-http-exception-handler';
 import { InvalidPassword } from '@auth/domain/exceptions/invalid-password';
-import { UserWithEmailAlreadyExists } from '@auth/application/exceptions/user-with-email-already-exists';
+import { UserWithEmailAlreadyExists } from '@users/application/exceptions/user-with-email-already-exists';
 import { InvalidDateTime } from '@shared/domain/exceptions/invalid-datetime';
 import { RabbitMQConnectionFailedException } from '@shared/infrastructure/rabbitmq/exceptions/rabbitmq-connection-failed.exception';
 import { RabbitMQNotConnectedException } from '@shared/infrastructure/rabbitmq/exceptions/rabbitmq-not-connected.exception';

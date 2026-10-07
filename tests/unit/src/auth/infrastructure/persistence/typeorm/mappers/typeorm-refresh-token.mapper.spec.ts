@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { TypeormRefreshTokenMapper } from '@auth/infrastructure/persistence/typeorm/mappers/typeorm-refresh-token.mapper';
-import { UserId } from '@auth/domain/value-objects/user-id';
+import { UserId } from '@users/domain/value-objects/user-id';
 import { RefreshToken } from '@auth/domain/refresh-token';
 import { RefreshTokenId } from '@auth/domain/value-objects/refresh-token-id';
 import { RefreshTokenHash } from '@auth/domain/value-objects/refresh-token-hash';
 import { RefreshTokenExpiresAt } from '@auth/domain/value-objects/refresh-token-expires-at';
 import { RefreshTokenRevokedAt } from '@auth/domain/value-objects/refresh-token-revoked-at';
 import { RefreshTokenCreatedAt } from '@auth/domain/value-objects/refresh-token-created-at';
-import { UserEntity } from '@auth/infrastructure/persistence/typeorm/entities/user.entity';
+import { UserEntity } from '@users/infrastructure/persistence/typeorm/entities/user.entity';
 import { RefreshTokenEntity } from '@auth/infrastructure/persistence/typeorm/entities/refresh-token.entity';
 
 const HASH = 'f'.repeat(64);

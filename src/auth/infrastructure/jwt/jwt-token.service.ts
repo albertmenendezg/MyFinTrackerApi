@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@auth/domain/user';
+import { AuthCredential } from '@auth/domain/auth-credential';
 import { Identifier } from '@shared/domain/value-objects/identifier';
 import {
     ACCESS_TOKEN_TYPE,
@@ -21,10 +21,11 @@ export class JwtTokenService implements TokenService {
         private readonly config: ConfigService,
     ) {}
 
-    async signAccessToken(user: User): Promise<AccessTokenData> {
+    async signAccessToken(
+        credential: AuthCredential,
+    ): Promise<AccessTokenData> {
         const payload: AccessTokenPayload = {
-            sub: user.id.toString(),
-            email: user.email.toString(),
+            sub: credential.userId.toString(),
             type: ACCESS_TOKEN_TYPE,
         };
 
@@ -36,9 +37,11 @@ export class JwtTokenService implements TokenService {
         return { token, expiresIn: this.expiresIn };
     }
 
-    async signRefreshToken(user: User): Promise<RefreshTokenData> {
+    async signRefreshToken(
+        credential: AuthCredential,
+    ): Promise<RefreshTokenData> {
         const payload: RefreshTokenPayload = {
-            sub: user.id.toString(),
+            sub: credential.userId.toString(),
             jti: Identifier.random().toString(),
             type: REFRESH_TOKEN_TYPE,
         };

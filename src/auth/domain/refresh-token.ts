@@ -1,5 +1,5 @@
 import { AggregateRoot } from '@shared/domain/aggregate-root';
-import { UserId } from '@auth/domain/value-objects/user-id';
+import { UserId } from '@users/domain/value-objects/user-id';
 import { RefreshTokenId } from '@auth/domain/value-objects/refresh-token-id';
 import { RefreshTokenHash } from '@auth/domain/value-objects/refresh-token-hash';
 import { RefreshTokenExpiresAt } from '@auth/domain/value-objects/refresh-token-expires-at';

@@ -3,7 +3,10 @@ import { RefreshAccessTokenRequest } from '@auth/application/dto/refresh-access-
 import { IssuedTokens } from '@auth/application/dto/issued-tokens';
 import { InvalidRefreshToken } from '@auth/application/exceptions/invalid-refresh-token';
 import { TokenIssuerService } from '@auth/application/services/token-issuer.service';
-import { UserId } from '@auth/domain/value-objects/user-id';
+import {
+    AUTH_CREDENTIAL_REPOSITORY,
+    AuthCredentialRepository,
+} from '@auth/domain/repository/auth-credential.repository';
 import {
     TOKEN_SERVICE,
     TokenService,
@@ -12,10 +15,7 @@ import {
     REFRESH_TOKEN_REPOSITORY,
     RefreshTokenRepository,
 } from '@auth/domain/repository/refresh-token.repository';
-import {
-    USER_REPOSITORY,
-    UserRepository,
-} from '@auth/domain/repository/user.repository';
+import { UserId } from '@users/domain/value-objects/user-id';
 import {
     DOMAIN_EVENT_PUBLISHER,
     DomainEventPublisher,
@@ -28,8 +28,8 @@ export class RefreshAccessTokenUseCase {
         private readonly tokenService: TokenService,
         @Inject(REFRESH_TOKEN_REPOSITORY)
         private readonly refreshTokenRepository: RefreshTokenRepository,
-        @Inject(USER_REPOSITORY)
-        private readonly userRepository: UserRepository,
+        @Inject(AUTH_CREDENTIAL_REPOSITORY)
+        private readonly credentialRepository: AuthCredentialRepository,
         private readonly tokenIssuer: TokenIssuerService,
         @Inject(DOMAIN_EVENT_PUBLISHER)
         private readonly domainEventPublisher: DomainEventPublisher,
@@ -58,12 +58,14 @@ export class RefreshAccessTokenUseCase {
         await this.refreshTokenRepository.save(stored);
         await this.domainEventPublisher.publish(stored.pullDomainEvents());
 
-        const user = await this.userRepository.findById(new UserId(sub));
+        const credential = await this.credentialRepository.findByUserId(
+            new UserId(sub),
+        );
 
-        if (!user) {
+        if (!credential) {
             throw new InvalidRefreshToken();
         }
 
-        return this.tokenIssuer.issue(user);
+        return this.tokenIssuer.issue(credential);
     }
 }

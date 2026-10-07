@@ -1,4 +1,4 @@
-import { User } from '@auth/domain/user';
+import { AuthCredential } from '@auth/domain/auth-credential';
 
 export const TOKEN_SERVICE: string = 'token-service';
 
@@ -7,7 +7,6 @@ export const REFRESH_TOKEN_TYPE = 'refresh';
 
 export interface AccessTokenPayload {
     sub: string;
-    email: string;
     type: typeof ACCESS_TOKEN_TYPE;
 }
 
@@ -28,7 +27,7 @@ export interface RefreshTokenData {
 }
 
 export interface TokenService {
-    signAccessToken(user: User): Promise<AccessTokenData>;
-    signRefreshToken(user: User): Promise<RefreshTokenData>;
+    signAccessToken(credential: AuthCredential): Promise<AccessTokenData>;
+    signRefreshToken(credential: AuthCredential): Promise<RefreshTokenData>;
     verifyRefreshToken(token: string): RefreshTokenPayload | null;
 }

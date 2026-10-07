@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { UserCreatedEvent } from '@auth/domain/events/user-created.event';
+import { AuthCredentialCreatedEvent } from '@auth/domain/events/auth-credential-created.event';
 import { RabbitmqDomainEventSerializer } from '@shared/infrastructure/rabbitmq/serializer/rabbitmq-domain-event-serializer';
 
 describe('RabbitmqDomainEventSerializer', () => {
     it('serializes a domain event to the wire format', () => {
-        const event = new UserCreatedEvent('user-123', {
+        const event = new AuthCredentialCreatedEvent('user-123', {
             email: 'john@doe.xyz',
         });
         const serializer = new RabbitmqDomainEventSerializer();

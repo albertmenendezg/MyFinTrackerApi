@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { UserPassword } from '@auth/domain/value-objects/user-password';
+import { AuthCredentialPassword } from '@auth/domain/value-objects/auth-credential-password';
 import { InvalidPassword } from '@auth/domain/exceptions/invalid-password';
 
-describe('UserPassword', () => {
+describe('AuthCredentialPassword', () => {
     it('accepts a value with at least 8 characters', () => {
-        const password = new UserPassword('S3cur3Pass!');
+        const password = new AuthCredentialPassword('S3cur3Pass!');
         expect(password.value).toBe('S3cur3Pass!');
         expect(password.toString()).toBe('S3cur3Pass!');
     });
@@ -12,7 +12,9 @@ describe('UserPassword', () => {
     it.each(['short', '', '123456 ', '   '])(
         'rejects "%s" with InvalidPassword',
         (value) => {
-            expect(() => new UserPassword(value)).toThrow(InvalidPassword);
+            expect(() => new AuthCredentialPassword(value)).toThrow(
+                InvalidPassword,
+            );
         },
     );
 });

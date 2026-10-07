@@ -1,6 +1,6 @@
 import { InvalidPassword } from '@auth/domain/exceptions/invalid-password';
 
-export class UserPassword {
+export class AuthCredentialPassword {
     public readonly value: string;
 
     constructor(value: string) {

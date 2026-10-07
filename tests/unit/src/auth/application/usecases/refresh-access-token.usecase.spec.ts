@@ -3,18 +3,17 @@ import { RefreshAccessTokenUseCase } from '@auth/application/usecases/refresh-ac
 import { RefreshAccessTokenRequest } from '@auth/application/dto/refresh-access-token.request';
 import { InvalidRefreshToken } from '@auth/application/exceptions/invalid-refresh-token';
 import { TokenIssuerService } from '@auth/application/services/token-issuer.service';
-import { User } from '@auth/domain/user';
-import { UserId } from '@auth/domain/value-objects/user-id';
-import { UserEmail } from '@auth/domain/value-objects/user-email';
-import { UserPassword } from '@auth/domain/value-objects/user-password';
+import { AuthCredential } from '@auth/domain/auth-credential';
+import { AuthCredentialPassword } from '@auth/domain/value-objects/auth-credential-password';
+import { AuthCredentialRepository } from '@auth/domain/repository/auth-credential.repository';
 import { RefreshToken } from '@auth/domain/refresh-token';
 import { RefreshTokenId } from '@auth/domain/value-objects/refresh-token-id';
 import { RefreshTokenHash } from '@auth/domain/value-objects/refresh-token-hash';
 import { RefreshTokenExpiresAt } from '@auth/domain/value-objects/refresh-token-expires-at';
 import { RefreshTokenCreatedAt } from '@auth/domain/value-objects/refresh-token-created-at';
 import { RefreshTokenRepository } from '@auth/domain/repository/refresh-token.repository';
-import { UserRepository } from '@auth/domain/repository/user.repository';
 import { TokenService } from '@auth/domain/services/token.service';
+import { UserId } from '@users/domain/value-objects/user-id';
 import { DomainEventPublisher } from '@shared/domain/events/domain-event-publisher';
 import { DomainEvent } from '@shared/domain/events/domain-event';
 
@@ -22,16 +21,16 @@ const HASH = 'd'.repeat(64);
 const ISSUED_ON = '2026-01-01T10:00:00.000Z';
 
 describe('RefreshAccessTokenUseCase', () => {
-    const user = User.create(
-        UserId.random(),
-        new UserEmail('john@doe.xyz'),
-        new UserPassword('hashed-password'),
+    const userId = UserId.random();
+    const credential = AuthCredential.create(
+        userId,
+        new AuthCredentialPassword('hashed-password'),
     );
 
     function activeToken(): RefreshToken {
         return new RefreshToken(
             RefreshTokenId.random(),
-            user.id,
+            userId,
             new RefreshTokenHash(HASH),
             new RefreshTokenExpiresAt(new Date('2027-01-01T00:00:00.000Z')),
             null,
@@ -50,11 +49,10 @@ describe('RefreshAccessTokenUseCase', () => {
         findByTokenHash: vi.fn(),
     } as unknown as RefreshTokenRepository;
 
-    const userRepository = {
+    const credentialRepository = {
         save: vi.fn(),
-        findByEmail: vi.fn(),
-        findById: vi.fn(),
-    } as unknown as UserRepository;
+        findByUserId: vi.fn(),
+    } as unknown as AuthCredentialRepository;
 
     const tokenIssuer = {
         issue: vi.fn(),
@@ -68,7 +66,7 @@ describe('RefreshAccessTokenUseCase', () => {
     const useCase = new RefreshAccessTokenUseCase(
         tokenService,
         refreshTokenRepository,
-        userRepository,
+        credentialRepository,
         tokenIssuer,
         publisher,
     );
@@ -78,7 +76,7 @@ describe('RefreshAccessTokenUseCase', () => {
         (
             tokenService.verifyRefreshToken as ReturnType<typeof vi.fn>
         ).mockReturnValue({
-            sub: user.id.toString(),
+            sub: userId.toString(),
             jti: 'jti-1',
             type: 'refresh',
         });
@@ -91,9 +89,9 @@ describe('RefreshAccessTokenUseCase', () => {
         (
             refreshTokenRepository.save as ReturnType<typeof vi.fn>
         ).mockResolvedValue(undefined);
-        (userRepository.findById as ReturnType<typeof vi.fn>).mockResolvedValue(
-            user,
-        );
+        (
+            credentialRepository.findByUserId as ReturnType<typeof vi.fn>
+        ).mockResolvedValue(credential);
         (tokenIssuer.issue as ReturnType<typeof vi.fn>).mockResolvedValue({
             accessToken: { token: 'new-access-token', expiresIn: 900 },
             refreshToken: { token: 'new-refresh-token', expiresIn: 604800 },
@@ -114,8 +112,8 @@ describe('RefreshAccessTokenUseCase', () => {
         expect(tokenIssuer.hashToken).toHaveBeenCalledWith(
             'presented-refresh-token',
         );
-        expect(userRepository.findById).toHaveBeenCalledWith(user.id);
-        expect(tokenIssuer.issue).toHaveBeenCalledWith(user);
+        expect(credentialRepository.findByUserId).toHaveBeenCalledWith(userId);
+        expect(tokenIssuer.issue).toHaveBeenCalledWith(credential);
         expect(tokens).toEqual({
             accessToken: { token: 'new-access-token', expiresIn: 900 },
             refreshToken: { token: 'new-refresh-token', expiresIn: 604800 },
@@ -191,7 +189,7 @@ describe('RefreshAccessTokenUseCase', () => {
     it('rejects an expired token', async () => {
         const expired = new RefreshToken(
             RefreshTokenId.random(),
-            user.id,
+            userId,
             new RefreshTokenHash(HASH),
             new RefreshTokenExpiresAt(new Date('2020-01-01T00:00:00.000Z')),
             null,
@@ -208,10 +206,10 @@ describe('RefreshAccessTokenUseCase', () => {
         expect(tokenIssuer.issue).not.toHaveBeenCalled();
     });
 
-    it('rejects when the user behind the token no longer exists', async () => {
-        (userRepository.findById as ReturnType<typeof vi.fn>).mockResolvedValue(
-            null,
-        );
+    it('rejects when the credential behind the token no longer exists', async () => {
+        (
+            credentialRepository.findByUserId as ReturnType<typeof vi.fn>
+        ).mockResolvedValue(null);
 
         await expect(
             useCase.execute(new RefreshAccessTokenRequest('presented-token')),

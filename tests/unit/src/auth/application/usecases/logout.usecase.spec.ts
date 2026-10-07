@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { LogoutUseCase } from '@auth/application/usecases/logout.usecase';
 import { LogoutRequest } from '@auth/application/dto/logout.request';
 import { TokenIssuerService } from '@auth/application/services/token-issuer.service';
-import { UserId } from '@auth/domain/value-objects/user-id';
+import { UserId } from '@users/domain/value-objects/user-id';
 import { RefreshToken } from '@auth/domain/refresh-token';
 import { RefreshTokenId } from '@auth/domain/value-objects/refresh-token-id';
 import { RefreshTokenHash } from '@auth/domain/value-objects/refresh-token-hash';
