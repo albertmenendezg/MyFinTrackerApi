@@ -38,7 +38,7 @@ export class User extends AggregateRoot {
             ['id', this.id.toString()],
             ['email', this.email.toString()],
             ['password', this.password.toString()],
-            ['roles', this.roles.map(r => r.toString())],
+            ['roles', this.roles.map((r) => r.toString())],
             ['createdAt', this.createdAt.toString()],
             ['updatedAt', this.updatedAt.toString()],
         ]);

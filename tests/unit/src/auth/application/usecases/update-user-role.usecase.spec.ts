@@ -49,18 +49,27 @@ describe('UpdateUserRoleUseCase', () => {
         );
     });
 
-    it('updates the user role and saves', async () => {
+    it('updates the user roles and saves', async () => {
         await useCase.execute(
-            new UpdateUserRoleRequest(user.id.value, 'admin'),
+            new UpdateUserRoleRequest(user.id.value, ['admin']),
         );
 
         expect(user.roles).toEqual([UserRole.ADMIN]);
         expect(repository.save).toHaveBeenCalledWith(user);
     });
 
+    it('accepts multiple roles at once', async () => {
+        await useCase.execute(
+            new UpdateUserRoleRequest(user.id.value, ['user', 'admin']),
+        );
+
+        expect(user.roles).toEqual([UserRole.USER, UserRole.ADMIN]);
+        expect(repository.save).toHaveBeenCalledWith(user);
+    });
+
     it('publishes a UserRolesUpdatedEvent', async () => {
         await useCase.execute(
-            new UpdateUserRoleRequest(user.id.value, 'admin'),
+            new UpdateUserRoleRequest(user.id.value, ['admin']),
         );
 
         expect(publisher.publish).toHaveBeenCalledTimes(1);
@@ -80,7 +89,7 @@ describe('UpdateUserRoleUseCase', () => {
             useCase.execute(
                 new UpdateUserRoleRequest(
                     '6f1c9a2e-3b7d-4f52-9c0a-8d1e5b3a7c94',
-                    'admin',
+                    ['admin'],
                 ),
             ),
         ).rejects.toBeInstanceOf(UserNotFoundException);
@@ -92,7 +101,7 @@ describe('UpdateUserRoleUseCase', () => {
     it('throws InvalidUserRolesException for an invalid role', async () => {
         await expect(
             useCase.execute(
-                new UpdateUserRoleRequest(user.id.value, 'superuser'),
+                new UpdateUserRoleRequest(user.id.value, ['superuser']),
             ),
         ).rejects.toBeInstanceOf(InvalidUserRolesException);
 

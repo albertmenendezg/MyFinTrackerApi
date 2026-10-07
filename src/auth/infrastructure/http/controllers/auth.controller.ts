@@ -147,26 +147,26 @@ export class AuthController {
     @ApiOkResponse({ type: MeResponse })
     @ApiUnauthorizedResponse({ description: 'Missing or invalid access token' })
     me(@CurrentUser() user: AuthenticatedUser): MeResponse {
-       return user;
+        return user;
     }
 
-    @Patch('users/:id/role')
+    @Patch('users/:id/roles')
     @Roles(['admin'])
     @HttpCode(HttpStatus.NO_CONTENT)
     @ApiCookieAuth()
     @ApiTags('Auth')
-    @ApiOperation({ summary: 'Update user role (admin only)' })
-    @ApiNoContentResponse({ description: 'User role updated' })
+    @ApiOperation({ summary: 'Update user roles (admin only)' })
+    @ApiNoContentResponse({ description: 'User roles updated' })
     @ApiBadRequestResponse({ description: 'Invalid role' })
     @ApiUnauthorizedResponse({ description: 'Missing or invalid access token' })
     @ApiForbiddenResponse({ description: 'Insufficient permissions' })
     @ApiNotFoundResponse({ description: 'User not found' })
     async updateUserRole(
-        @Param('id') targetUserId: string,
+        @Param('id') userId: string,
         @Body() payload: UpdateUserRolePayload,
     ): Promise<void> {
         await this.updateUserRoleUseCase.execute(
-            new UpdateUserRoleRequest(targetUserId, payload.role),
+            new UpdateUserRoleRequest(userId, payload.roles),
         );
     }
 

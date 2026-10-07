@@ -3,8 +3,9 @@ import { ApiProperty } from '@nestjs/swagger';
 export class UpdateUserRolePayload {
     @ApiProperty({
         enum: ['user', 'admin'],
-        example: 'admin',
-        description: 'New user role',
+        example: ['admin'],
+        description: 'New user roles',
+        type: [String],
     })
-    readonly role: string;
+    readonly roles: string[];
 }

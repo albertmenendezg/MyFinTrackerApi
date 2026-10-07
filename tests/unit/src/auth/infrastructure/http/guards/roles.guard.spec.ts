@@ -92,7 +92,12 @@ describe('RolesGuard', () => {
         const guard = createGuard({});
 
         expect(() =>
-            guard.handleRequest(new Error('jwt expired'), null, null, executionContext()),
+            guard.handleRequest(
+                new Error('jwt expired'),
+                null,
+                null,
+                executionContext(),
+            ),
         ).toThrow(/Invalid or expired access token/);
     });
 

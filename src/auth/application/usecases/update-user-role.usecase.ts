@@ -20,7 +20,7 @@ export class UpdateUserRoleUseCase {
     ) {}
 
     async execute(request: UpdateUserRoleRequest): Promise<void> {
-        const { userId, role } = request;
+        const { userId, roles } = request;
 
         const user = await this.repository.findById(new UserId(userId));
 
@@ -28,8 +28,8 @@ export class UpdateUserRoleUseCase {
             throw new UserNotFoundException();
         }
 
-        const userRole = new UserRole(role);
-        user.updateRoles([userRole]);
+        const userRoles = roles.map((r) => new UserRole(r));
+        user.updateRoles(userRoles);
 
         await this.repository.save(user);
         await this.publisher.publish(user.pullDomainEvents());

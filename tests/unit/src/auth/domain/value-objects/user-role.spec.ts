@@ -16,7 +16,9 @@ describe('UserRole', () => {
     it.each(['superuser', 'moderator', '', 'USER', 'Admin'])(
         'rejects "%s" with InvalidUserRolesException',
         (value) => {
-            expect(() => new UserRole(value)).toThrow(InvalidUserRolesException);
+            expect(() => new UserRole(value)).toThrow(
+                InvalidUserRolesException,
+            );
         },
     );
 
