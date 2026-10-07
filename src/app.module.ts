@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { GlobalHttpExceptionHandler } from '@shared/infrastructure/http/filters/global-http-exception-handler';
-import { JwtAuthGuard } from '@auth/infrastructure/http/guards/jwt-auth.guard';
+import { RolesGuard } from '@auth/infrastructure/http/guards/roles.guard';
 import { AuthModule } from '@auth/auth.module';
 import { SharedModule } from '@shared/shared.module';
 
@@ -15,7 +15,7 @@ import { SharedModule } from '@shared/shared.module';
         },
         {
             provide: APP_GUARD,
-            useClass: JwtAuthGuard,
+            useClass: RolesGuard,
         },
     ],
 })

@@ -8,6 +8,7 @@ import { CreateUserUseCase } from '@auth/application/usecases/create-user.usecas
 import { LoginUseCase } from '@auth/application/usecases/login.usecase';
 import { LogoutUseCase } from '@auth/application/usecases/logout.usecase';
 import { RefreshAccessTokenUseCase } from '@auth/application/usecases/refresh-access-token.usecase';
+import { UpdateUserRoleUseCase } from '@auth/application/usecases/update-user-role.usecase';
 import { TokenIssuerService } from '@auth/application/services/token-issuer.service';
 import { BcryptPasswordHasher } from '@auth/infrastructure/password-hasher/bcrypt-password-hasher';
 import { PASSWORD_HASHER_SERVICE } from '@auth/domain/services/password-hasher.service';
@@ -40,6 +41,7 @@ import { AuthCookieService } from '@auth/infrastructure/http/cookies/auth-cookie
         LoginUseCase,
         RefreshAccessTokenUseCase,
         LogoutUseCase,
+        UpdateUserRoleUseCase,
         TokenIssuerService,
         TypeormUserMapper,
         TypeormRefreshTokenMapper,

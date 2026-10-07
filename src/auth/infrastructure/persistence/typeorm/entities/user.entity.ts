@@ -16,4 +16,7 @@ export class UserEntity {
 
     @Column({ name: 'updated_at', type: 'timestamptz' })
     updatedAt: Date;
+
+    @Column({ name: 'roles', type: 'jsonb' })
+    roles: string[];
 }

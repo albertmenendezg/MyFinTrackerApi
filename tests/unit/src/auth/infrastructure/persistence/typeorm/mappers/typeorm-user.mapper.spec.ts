@@ -3,6 +3,7 @@ import { User } from '@auth/domain/user';
 import { UserId } from '@auth/domain/value-objects/user-id';
 import { UserEmail } from '@auth/domain/value-objects/user-email';
 import { UserPassword } from '@auth/domain/value-objects/user-password';
+import { UserRole } from '@auth/domain/value-objects/user-role';
 import { TypeormUserMapper } from '@auth/infrastructure/persistence/typeorm/mappers/typeorm-user.mapper';
 
 describe('TypeormUserMapper', () => {
@@ -22,6 +23,7 @@ describe('TypeormUserMapper', () => {
         expect(entity.password).toBe(plainPassword);
         expect(entity.createdAt).toEqual(user.createdAt.value);
         expect(entity.updatedAt).toEqual(user.updatedAt.value);
+        expect(entity.roles).toEqual(['user']);
     });
 
     it('round-trips an entity back to the domain user', () => {
@@ -37,5 +39,15 @@ describe('TypeormUserMapper', () => {
         expect(domain.updatedAt.value.toISOString()).toBe(
             user.updatedAt.value.toISOString(),
         );
+        expect(domain.roles).toEqual([UserRole.USER]);
+    });
+
+    it('parses jsonb roles returned as string by typeorm', () => {
+        const entity = mapper.toEntity(user);
+        entity.roles = JSON.stringify(['user']) as any;
+
+        const domain = mapper.toDomain(entity);
+
+        expect(domain.roles).toEqual([UserRole.USER]);
     });
 });

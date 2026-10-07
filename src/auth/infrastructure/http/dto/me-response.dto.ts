@@ -9,4 +9,11 @@ export class MeResponse {
 
     @ApiProperty({ example: 'user@example.com', description: 'User email' })
     readonly email: string;
+
+    @ApiProperty({
+        enum: ['user', 'admin'],
+        example: 'user',
+        description: 'User role',
+    })
+    readonly roles: string[];
 }
