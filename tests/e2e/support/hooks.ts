@@ -13,7 +13,9 @@ BeforeAll(async function () {
 });
 
 Before(async function () {
-    await ApiContext.current().dataSource.query('TRUNCATE TABLE users CASCADE');
+    const context = ApiContext.current();
+    context.resetSession();
+    await context.dataSource.query('TRUNCATE TABLE users CASCADE');
 });
 
 AfterAll(async function () {

@@ -3,7 +3,7 @@ import { CreateUserUseCase } from '@auth/application/usecases/create-user.usecas
 import { CreateUserRequest } from '@auth/application/dto/create-user.request';
 import { UserRepository } from '@auth/domain/repository/user.repository';
 import { PasswordHasherService } from '@auth/domain/services/password-hasher.service';
-import { DomainEventPublisher } from '@shared/shared/domain/events/domain-event-publisher';
+import { DomainEventPublisher } from '@shared/domain/events/domain-event-publisher';
 import { User } from '@auth/domain/user';
 import { UserId } from '@auth/domain/value-objects/user-id';
 import { UserEmail } from '@auth/domain/value-objects/user-email';
@@ -15,6 +15,7 @@ describe('CreateUserUseCase', () => {
     const repository = {
         save: vi.fn().mockResolvedValue(undefined),
         findByEmail: vi.fn(),
+        findById: vi.fn(),
     } as unknown as UserRepository;
 
     const passwordHasher = {
@@ -53,7 +54,9 @@ describe('CreateUserUseCase', () => {
 
         await useCase.execute(request);
 
-        expect(repository.findByEmail).toHaveBeenCalledWith('john@doe.xyz');
+        expect(repository.findByEmail).toHaveBeenCalledWith(
+            new UserEmail('john@doe.xyz'),
+        );
         expect(passwordHasher.hash).toHaveBeenCalledWith('S3cur3Pass!');
         expect(repository.save).toHaveBeenCalledTimes(1);
         const saved = (repository.save as ReturnType<typeof vi.fn>).mock
