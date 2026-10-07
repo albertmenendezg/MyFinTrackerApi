@@ -7,6 +7,7 @@ import {
 
 export interface AppConfig {
     port: number;
+    corsOrigin: string;
 }
 
 export interface RabbitMQConfig {
@@ -36,6 +37,7 @@ export const appConfig = registerAs('app', (): AppConfig => {
     }
     return {
         port: result.data.APP_PORT ?? 3000,
+        corsOrigin: result.data.APP_CORS_ORIGIN,
     };
 });
 

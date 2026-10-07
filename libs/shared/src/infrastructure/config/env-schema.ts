@@ -1,7 +1,11 @@
 import { z } from 'zod';
 
 export const appEnvSchema = z.object({
-    APP_PORT: z.coerce.number().int().min(1).max(65535).optional(),
+    APP_PORT: z.coerce.number().int().min(1).max(65535, 'APP_PORT is required'),
+    APP_CORS_ORIGIN: z
+        .string()
+        .min(1, 'APP_CORS_ORIGIN cannot be empty')
+        .default('http://localhost:3000'),
 });
 
 export const rabbitmqEnvSchema = z.object({
