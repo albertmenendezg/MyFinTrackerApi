@@ -1,7 +1,7 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateRefreshTokensTable1790628891088 implements MigrationInterface {
-    name = 'CreateRefreshTokensTable1790628891088';
+export class CreateRefreshTokensTable1790628891092 implements MigrationInterface {
+    name = 'CreateRefreshTokensTable1790628891092';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.query(`
@@ -19,6 +19,9 @@ export class CreateRefreshTokensTable1790628891088 implements MigrationInterface
         await queryRunner.query(`
             ALTER TABLE "refresh_tokens"
             ADD CONSTRAINT "FK_3ddc983c5f7bcf132fd8732c3f4" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION
+        `);
+        await queryRunner.query(`
+            CREATE INDEX "IDX_3ddc983c5f7bcf132fd8732c3f" ON "refresh_tokens" ("user_id")
         `);
     }
 

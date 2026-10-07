@@ -1,9 +1,9 @@
-import { CreateRefreshTokensTable1790628891088 } from './1790628891088-CreateRefreshTokensTable';
-import { CreateUsersTable1790357681039 } from './1790357681039-CreateUsersTable';
-import { AddRolesToUsersTable1790628891089 } from './1790628891089-AddRolesToUsersTable';
+import { CreateAuthCredentialsTable1790628891091 } from './1790628891091-CreateAuthCredentialsTable';
+import { CreateRefreshTokensTable1790628891092 } from './1790628891092-CreateRefreshTokensTable';
+import { CreateUsersTable1790628891090 } from './1790628891090-CreateUsersTable';
 
 export const migrations = [
-    CreateUsersTable1790357681039,
-    CreateRefreshTokensTable1790628891088,
-    AddRolesToUsersTable1790628891089,
+    CreateUsersTable1790628891090,
+    CreateAuthCredentialsTable1790628891091,
+    CreateRefreshTokensTable1790628891092,
 ];

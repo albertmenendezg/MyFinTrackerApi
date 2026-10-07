@@ -1,6 +1,7 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
-import { UserEntity } from '@auth/infrastructure/persistence/typeorm/entities/user.entity';
+import { AuthCredentialEntity } from '@auth/infrastructure/persistence/typeorm/entities/auth-credential.entity';
 import { RefreshTokenEntity } from '@auth/infrastructure/persistence/typeorm/entities/refresh-token.entity';
+import { UserEntity } from '@users/infrastructure/persistence/typeorm/entities/user.entity';
 import { databaseEnvSchema } from '@shared/infrastructure/config/env-schema';
 import { migrations } from '@shared/infrastructure/persistence/typeorm/migrations';
 
@@ -21,7 +22,7 @@ export function createDataSourceOptions(): DataSourceOptions {
         password: result.data.DB_PASSWORD,
         database: result.data.DB_NAME,
         synchronize: false,
-        entities: [UserEntity, RefreshTokenEntity],
+        entities: [UserEntity, AuthCredentialEntity, RefreshTokenEntity],
         migrations,
     };
 }
