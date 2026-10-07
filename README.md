@@ -157,7 +157,8 @@ OpenAPI docs are served at `/docs` (JSON at `/docs-json`). Current surface:
 | POST   | `/auth/login`     | public | auth | Log in, sets the auth cookies (204, no body) |
 | POST   | `/auth/refresh`   | public | auth | Rotate the auth cookies (204, no body)   |
 | POST   | `/auth/logout`    | public | auth | Revoke the refresh token, clear cookies (204) |
-| GET    | `/auth/me`        | cookie | auth | Return the authenticated user (200, `{ id, email }`) |
+| GET    | `/auth/me`        | cookie | auth | Return the authenticated user (200, `{ id, email, role }`) |
+| PATCH  | `/auth/users/:id/roles` | admin | auth | Update user roles (204, no body) |
 
 ## Environment variables
 

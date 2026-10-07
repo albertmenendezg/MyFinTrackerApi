@@ -23,6 +23,7 @@ Interactive docs at `/docs` (OpenAPI JSON at `/docs-json`). Current surface:
 | POST   | `/auth/refresh`  | auth | Rotate the auth cookies (204, no body) |
 | POST   | `/auth/logout`   | auth | Revoke the refresh token, clear cookies (204) |
 | GET    | `/auth/me`       | auth | Return the authenticated user (200, cookie auth) |
+| PATCH  | `/auth/users/:id/roles` | auth | Update user roles, admin only (204, no body) |
 
 All routes are private by default: the global `JwtAuthGuard` (`APP_GUARD`) requires a valid access cookie, and only the four `@Public()` endpoints above are open.
 
