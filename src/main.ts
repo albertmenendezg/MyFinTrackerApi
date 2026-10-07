@@ -23,10 +23,6 @@ async function bootstrap() {
         .setTitle('MyFinTracker API')
         .setDescription('Personal finance API organized in bounded contexts')
         .setVersion('0.0.1')
-        .addCookieAuth(config.getOrThrow<string>('auth.cookies.access.name'), {
-            type: 'apiKey',
-            in: 'cookie',
-        })
         .build();
     const document = SwaggerModule.createDocument(app, swaggerConfig);
     SwaggerModule.setup('docs', app, document);
