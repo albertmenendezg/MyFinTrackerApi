@@ -41,10 +41,10 @@ export class TypeormUserMapper {
             new UserName(entity.name),
             entity.avatarUrl ? new UserAvatar(entity.avatarUrl) : null,
             this.toAddress(entity),
+            rawRoles.map((r: string) => new UserRole(r)),
             new Currency(entity.preferredCurrency),
             new UserCreatedAt(entity.createdAt),
             new UserUpdatedAt(entity.updatedAt),
-            rawRoles.map((r: string) => new UserRole(r)),
         );
     }
 

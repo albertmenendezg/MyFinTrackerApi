@@ -56,10 +56,18 @@ export class AuthController {
         description: 'Invalid email, password, name or currency',
     })
     async register(@Body() request: RegisterPayload): Promise<void> {
-        const { email, password, name, preferredCurrency } = request;
+        const { email, password, name, preferredCurrency, avatar, address } =
+            request;
 
         await this.registerUseCase.execute(
-            new RegisterRequest(email, password, name, preferredCurrency),
+            new RegisterRequest(
+                email,
+                password,
+                name,
+                preferredCurrency,
+                avatar,
+                address,
+            ),
         );
     }
 

@@ -24,10 +24,10 @@ describe('TypeormUserMapper', () => {
             postalCode: '28001',
             country: 'ES',
         }),
+        [UserRole.USER, UserRole.ADMIN],
         new Currency('EUR'),
         UserCreatedAt.now(),
         UserUpdatedAt.now(),
-        [UserRole.USER, UserRole.ADMIN],
     );
 
     it('maps a domain user to an entity', () => {

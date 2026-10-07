@@ -85,6 +85,37 @@ describe('RegisterUseCase', () => {
         ).toHaveLength(1);
     });
 
+    it('forwards optional avatar and address to the user creation', async () => {
+        await useCase.execute(
+            new RegisterRequest(
+                'jane@doe.xyz',
+                'S3cur3Pass!',
+                'Jane Doe',
+                'USD',
+                'https://example.com/jane.png',
+                {
+                    street: 'Calle Mayor 1',
+                    city: 'Madrid',
+                    postalCode: '28001',
+                    country: 'ES',
+                },
+            ),
+        );
+
+        expect(createUserUseCase.execute).toHaveBeenCalledTimes(1);
+        const profileRequest = (
+            createUserUseCase.execute as ReturnType<typeof vi.fn>
+        ).mock.calls[0][0] as CreateUserRequest;
+        expect(profileRequest.avatar).toBe('https://example.com/jane.png');
+        expect(profileRequest.address).toEqual({
+            street: 'Calle Mayor 1',
+            city: 'Madrid',
+            postalCode: '28001',
+            country: 'ES',
+        });
+        expect(credentialRepository.save).toHaveBeenCalledTimes(1);
+    });
+
     it('propagates a duplicate email without saving credentials', async () => {
         (
             createUserUseCase.execute as ReturnType<typeof vi.fn>

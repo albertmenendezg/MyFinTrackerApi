@@ -31,7 +31,8 @@ export class RegisterUseCase {
     ) {}
 
     async execute(request: RegisterRequest): Promise<void> {
-        const { email, password, name, preferredCurrency } = request;
+        const { email, password, name, preferredCurrency, avatar, address } =
+            request;
 
         new AuthCredentialPassword(password);
 
@@ -43,6 +44,8 @@ export class RegisterUseCase {
                 email,
                 name,
                 preferredCurrency,
+                avatar,
+                address,
             ),
         );
 

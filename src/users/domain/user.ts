@@ -73,13 +73,15 @@ export class User extends AggregateRoot {
         email: UserEmail,
         name: UserName,
         preferredCurrency: Currency,
+        avatar: UserAvatar | null = null,
+        address: UserAddress | null = null,
     ): User {
         const user = new User(
             id,
             email,
             name,
-            null,
-            null,
+            avatar,
+            address,
             [UserRole.USER],
             preferredCurrency,
             UserCreatedAt.now(),
@@ -97,18 +99,23 @@ export class User extends AggregateRoot {
         if (email !== undefined) {
             this._email = email;
         }
+
         if (name !== undefined) {
             this._name = name;
         }
+
         if (avatar !== undefined) {
             this._avatar = avatar;
         }
+
         if (address !== undefined) {
             this._address = address;
         }
+
         if (preferredCurrency !== undefined) {
             this._preferredCurrency = preferredCurrency;
         }
+
         this._updatedAt = UserUpdatedAt.now();
 
         this.record(
