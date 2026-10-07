@@ -23,7 +23,9 @@ Interactive docs at `/docs` (OpenAPI JSON at `/docs-json`). Current surface:
 | POST   | `/auth/refresh`  | auth | Rotate the auth cookies (204, no body) |
 | POST   | `/auth/logout`   | auth | Revoke the refresh token, clear cookies (204) |
 | GET    | `/auth/me`       | auth | Return the authenticated user (200, cookie auth) |
-| PATCH  | `/auth/users/:id/roles` | auth | Update user roles, admin only (204, no body) |
+| GET    | `/users/me`      | users | Return the authenticated user profile (200, cookie auth) |
+| PATCH  | `/users/me`      | users | Update the authenticated user profile (204, no body) |
+| PATCH  | `/users/:id/roles` | users | Update user roles, admin only (204, no body) |
 
 All routes are private by default: the global `JwtAuthGuard` (`APP_GUARD`) requires a valid access cookie, and only the four `@Public()` endpoints above are open.
 
@@ -45,7 +47,7 @@ Schema changes: add a migration under `libs/shared/src/infrastructure/persistenc
 
 ## Mandatory conventions
 
-- **Path aliases**: imports use tsconfig `paths` aliases — `@auth/*`, …, `@shared/*` (note: the shared library alias is `@shared/`, NOT `@shared`). Never use long relative paths.
+- **Path aliases**: imports use tsconfig `paths` aliases — `@auth/*`, `@users/*`, `@shared/*` (note: the shared library alias is `@shared/`, NOT `@shared`). Never use long relative paths.
 - **CommonJS**: the project is CommonJS (`module: commonjs`) with **no `"type": "module"`** — do NOT add `.js` extensions to imports, do NOT convert to ESM, do NOT add `"moduleResolution": "bundler"`.
 - **No new dependencies** without checking `package.json` first (Nest 12, zod 4, amqplib, vitest, ts-node, passport, `@nestjs/jwt`, cookie-parser already present).
 - **Config pattern per BC**:
@@ -53,11 +55,12 @@ Schema changes: add a migration under `libs/shared/src/infrastructure/persistenc
   - `infrastructure/config/<name>.config.ts` → `registerAs('<bc>', ...)` factory that `safeParse(process.env)`, throws a descriptive error on failure, and maps to the config object.
   - The BC module registers it via `ConfigModule.forFeature(<bc>Config)`.
   - Do NOT move per-BC env validation into `SharedModule`; shared validates only its own infra envs (`APP_PORT`, `APP_CORS_ORIGIN`, `RABBITMQ_*`, `DB_*`) via `env.validation.ts` / `validateEnv`.
-- **DI style**: define abstract interfaces/tokens in `domain/` (e.g. `PASSWORD_HASHER_SERVICE`, `USER_REPOSITORY`), implement them in `infrastructure/`, and bind with `useClass` in the module `providers`. Repositories likewise (`UserRepository` → `TypeormUserRepository`).
+- **DI style**: define abstract interfaces/tokens in `domain/` (e.g. `PASSWORD_HASHER_SERVICE`, `USER_REPOSITORY`), implement them in `infrastructure/`, and bind with `useClass` in the module `providers`. Repositories likewise (`AuthCredentialRepository` → `TypeormAuthCredentialRepository`).
 - **Persistence (TypeORM)**: `TypeOrmModule.forRootAsync` lives in `SharedModule` (global), not in `app.module.ts`; BCs register entities via `TypeOrmModule.forFeature([...])`. Per aggregate use `infrastructure/persistence/typeorm/{entities,mappers,repositories}/...` — mapper is `toEntity`/`toDomain`, repository implements the domain interface. Timestamps: `timestamptz` (UTC). Schema comes from migrations (`libs/shared/src/infrastructure/persistence/typeorm/`), not from `synchronize` (default `false`).
 - **CQRS (commands)**: use cases / handler actions that mutate a resource return `Promise<void>` (no data). Reads happen through queries or read endpoints, never as a command's return value.
 - **Swagger/OpenAPI**: every endpoint is documented manually with `@nestjs/swagger` — `@ApiTags('Auth')` (BC name capitalized), `@ApiOperation`, response decorators, and `@ApiProperty` on transport DTO fields in `infrastructure/http/dto/` (class properties, not ctor params). Application DTOs (`application/dto/`) carry no Swagger decorators. UI is served at `/docs`, wired inline in `src/main.ts`; new endpoints must keep it in sync.
-- **Exceptions**: prefer custom exceptions extending the shared bases `DomainException` / `ApplicationException` / `InfrastructureException` (`@shared/{domain,application,infrastructure}/exceptions/`) instead of raw `Error`. Define them in the layer that raises them.
+- **Exceptions**: prefer custom exceptions extending the shared bases `DomainException` / `ApplicationException` / `InfrastructureException` (`@shared/{domain,application,infrastructure}/exceptions/`) instead of raw `Error`. Define them in the layer that raises them. Prefer one exception class per violated invariant over a single parameterized one.
+- **Consumers**: event consumers are thin driven adapters in `infrastructure/` (never `application/`) that map the event to an application use case and delegate to it. Name them `<UseCase>On<Event>` with the queue in snake_case. Cross-BC read copies are projections synced exclusively through domain events (the consumer re-reads the source aggregate by `aggregateId`).
 - **Auth (cookies)**: access and refresh JWTs are returned **only** as `httpOnly` cookies — never in a response body (`204` is the expected success status on login/refresh/logout). Routing is deny-by-default: the global `JwtAuthGuard` (`APP_GUARD` in `app.module.ts`) guards every route and only `@Public()` handlers (register, login, refresh, logout) are open. Payloads carry `type: 'access' | 'refresh'` and the strategy rejects the wrong one. Refresh tokens are persisted as SHA-256 hashes in `refresh_tokens` (the raw token is never stored) and **rotated on every `/auth/refresh`**: the presented token is revoked, published as `refresh_token.revoked`, and a new pair is issued. Only the cookie **names** come from config (`JWT_COOKIE_NAME` / `JWT_REFRESH_COOKIE_NAME`, read as `auth.cookies.{access,refresh}.name`). The attributes — `httpOnly: true`, `sameSite: 'lax'`, `secure: false`, and `path` (`/` for access, `/auth` for the refresh token) — are **hardcoded in `AuthCookieService` on purpose**; they are security decisions, not deployment settings, so do not turn them into env vars. `secure: false` therefore suits HTTP only (local) — deploying behind HTTPS means flipping it in that class.
 - **HTTP errors**: every error is returned as a uniform `HttpError` body (`{ path, status, message, timestamp }`) by the global `GlobalHttpExceptionHandler` (registered as `APP_FILTER` in `app.module.ts`, `@Catch(Error)`). A `HttpException` keeps its own status; subclasses of `DomainException` / `ApplicationException` / `InfrastructureException` map to 400 / 409 / 503 via the `HTTP_ERROR_CODES` map (`instanceof` lookup, concrete exceptions registered before the bases); anything else defaults to 500. Do not import BC exceptions from `libs/shared`.
 - **Formatting**: 4-space indentation, single quotes, trailing commas (Prettier config). Match surrounding code exactly.

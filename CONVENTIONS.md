@@ -144,7 +144,7 @@ Use cases act as **commands** for mutations and follow a light CQRS style:
   providers: [{ provide: PASSWORD_HASHER_SERVICE, useClass: BcryptPasswordHasher }]
   ```
 
-- **Repositories** follow the same shape: repository interface/token in `domain/repository/`, TypeORM adapter in `infrastructure/persistence/typeorm/`, bound with `useClass` (`UserRepository` → `TypeormUserRepository`).
+- **Repositories** follow the same shape: repository interface/token in `domain/repository/`, TypeORM adapter in `infrastructure/persistence/typeorm/`, bound with `useClass` (`AuthCredentialRepository` → `TypeormAuthCredentialRepository`).
 - Controllers → use cases → domain/application logic. Keep adapters out of `application/` and `domain/`.
 
 ## 7. Persistence (TypeORM)
@@ -191,6 +191,7 @@ Guidelines:
 - Keep the base classes in `libs/shared/src/{domain,application,infrastructure}/exceptions/`. Do not import a BC from shared.
 - Define each custom exception **next to what raises it**, in the matching layer folder: BC-domain exceptions under `src/<bc>/domain/exceptions/`, domain shared ones under `libs/shared/src/domain/exceptions/`, infra ones alongside their adapter (e.g. `rabbitmq/exceptions/`).
 - Set `this.name` to the class name and write descriptive messages (framework base classes already follow this; match them).
+- Prefer one exception class per violated invariant (`InvalidUserAddressStreet`, `InvalidUserAddressCity`, …) over a single parameterized exception.
 
 **HTTP transport** — every error surfaces as a uniform `HttpError` body (`{ path, status, message, timestamp }`, where `timestamp` is a `Date` serialized as ISO-8601), produced by the global `GlobalHttpExceptionHandler` (`libs/shared/src/infrastructure/http/filters/`, bound via `APP_FILTER` in `app.module.ts`). The filter is `@Catch(Error)`, so only `Error` instances reach it. Mapping rules:
 
@@ -209,7 +210,11 @@ Guidelines:
 
   Produced by `RabbitmqDomainEventSerializer.toMessage`, consumed by `RabbitmqDomainEventDeserializer.fromMessage`.
 - **Publishing:** inject `DOMAIN_EVENT_PUBLISHER` and call `publish(events)`.
-- **Consuming:** decorate a handler with `@DomainEventConsumer({ eventName, eventClass, queue, exchange? })`. `RabbitmqDomainEventConsumerRegistrar` discovers those providers, registers the handler in `DomainEventDispatcher`, and binds the queue on bootstrap.
+- **Consuming:** decorate a handler with `@DomainEventConsumer({ eventName, eventClass, queue, exchange? })` (the decorator lives in shared infrastructure, `libs/shared/src/infrastructure/rabbitmq/domain-event-consumer.ts`, next to the registrar that reads it). `RabbitmqDomainEventConsumerRegistrar` discovers those providers, registers the handler in `DomainEventDispatcher`, and binds the queue on bootstrap.
+  - **Placement:** consumers are driven adapters — they live in `infrastructure/` (e.g. `infrastructure/rabbitmq/<name>.consumer.ts`), never in `application/`.
+  - **Naming:** `<UseCase>On<Event>` for the class (e.g. `UpdateAuthCredentialRolesOnUserRolesUpdated`) and the same name in snake_case for the queue (e.g. `update_auth_credential_roles_on_user_roles_updated`).
+  - **Thin handlers:** the consumer maps the event to an application use case and delegates (`new UpdateAuthCredentialRolesRequest(aggregateId)` → `useCase.execute(...)`); all business logic lives in the use case, which is unit-tested on its own.
+  - **Projections:** a BC may keep a read-only copy of another BC's data (e.g. roles in `AuthCredential`) and sync it exclusively through domain events. The consumer re-reads the source aggregate by `aggregateId` instead of trusting the event `body`.
 - A live RabbitMQ instance is needed to actually publish/consume; the app can boot without it.
 
 ## 10. OpenAPI (Swagger)
