@@ -2,20 +2,20 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DiscoveryModule } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DomainEventDispatcher } from '@shared/shared/application/events/domain-event-dispatcher';
-import { DOMAIN_EVENT_PUBLISHER } from '@shared/shared/domain/events/domain-event-publisher';
-import { RabbitMqDomainEventPublisher } from '@shared/shared/infrastructure/rabbitmq/publisher/rabbitmq-domain-event-publisher';
-import { RabbitmqDomainEventConsumerRegistrar } from '@shared/shared/infrastructure/rabbitmq/registry/rabbitmq-domain-event-consumer-registrar.service';
-import { RabbitmqDomainEventDeserializer } from '@shared/shared/infrastructure/rabbitmq/serializer/rabbitmq-domain-event-deserializer';
-import { RabbitmqDomainEventSerializer } from '@shared/shared/infrastructure/rabbitmq/serializer/rabbitmq-domain-event-serializer';
-import { RabbitMQClient } from '@shared/shared/infrastructure/rabbitmq/client/rabbitmq-client.service';
+import { DomainEventDispatcher } from '@shared/application/events/domain-event-dispatcher';
+import { DOMAIN_EVENT_PUBLISHER } from '@shared/domain/events/domain-event-publisher';
+import { RabbitMqDomainEventPublisher } from '@shared/infrastructure/rabbitmq/publisher/rabbitmq-domain-event-publisher';
+import { RabbitmqDomainEventConsumerRegistrar } from '@shared/infrastructure/rabbitmq/registry/rabbitmq-domain-event-consumer-registrar.service';
+import { RabbitmqDomainEventDeserializer } from '@shared/infrastructure/rabbitmq/serializer/rabbitmq-domain-event-deserializer';
+import { RabbitmqDomainEventSerializer } from '@shared/infrastructure/rabbitmq/serializer/rabbitmq-domain-event-serializer';
+import { RabbitMQClient } from '@shared/infrastructure/rabbitmq/client/rabbitmq-client.service';
 import {
     appConfig,
     databaseConfig,
     rabbitmqConfig,
-} from '@shared/shared/infrastructure/config/shared.config';
-import { validateEnv } from '@shared/shared/infrastructure/config/env.validation';
-import * as path from 'path';
+} from '@shared/infrastructure/config/shared.config';
+import { validateEnv } from '@shared/infrastructure/config/env.validation';
+import { migrations } from '@shared/infrastructure/persistence/typeorm/migrations';
 
 @Global()
 @Module({
@@ -35,16 +35,7 @@ import * as path from 'path';
                 password: config.getOrThrow<string>('db.password'),
                 database: config.getOrThrow<string>('db.name'),
                 migrationsRun: config.getOrThrow<boolean>('db.migrationsRun'),
-                migrations: [
-                    path.join(
-                        __dirname,
-                        'infrastructure',
-                        'persistence',
-                        'typeorm',
-                        'migrations',
-                        '*.{ts,js}',
-                    ),
-                ],
+                migrations,
                 autoLoadEntities: true,
             }),
         }),

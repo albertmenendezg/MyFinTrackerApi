@@ -1,7 +1,8 @@
-import * as path from 'path';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { UserEntity } from '@auth/infrastructure/persistence/typeorm/entities/user.entity';
-import { databaseEnvSchema } from '@shared/shared/infrastructure/config/env-schema';
+import { RefreshTokenEntity } from '@auth/infrastructure/persistence/typeorm/entities/refresh-token.entity';
+import { databaseEnvSchema } from '@shared/infrastructure/config/env-schema';
+import { migrations } from '@shared/infrastructure/persistence/typeorm/migrations';
 
 export function createDataSourceOptions(): DataSourceOptions {
     const result = databaseEnvSchema.safeParse(process.env);
@@ -20,8 +21,8 @@ export function createDataSourceOptions(): DataSourceOptions {
         password: result.data.DB_PASSWORD,
         database: result.data.DB_NAME,
         synchronize: false,
-        entities: [UserEntity],
-        migrations: [path.join(__dirname, 'migrations', '*.{ts,js}')],
+        entities: [UserEntity, RefreshTokenEntity],
+        migrations,
     };
 }
 
