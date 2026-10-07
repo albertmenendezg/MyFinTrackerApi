@@ -1,7 +1,7 @@
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { DiscoveryService } from '@nestjs/core';
 import { DomainEventDispatcher } from '@shared/application/events/domain-event-dispatcher';
-import { DomainEventConsumer } from '@shared/application/events/domain-event-consumer';
+import { DomainEventConsumer } from '@shared/infrastructure/rabbitmq/domain-event-consumer';
 import { DomainEvent } from '@shared/domain/events/domain-event';
 import { DomainEventHandler } from '@shared/domain/events/domain-event-handler';
 import { RabbitmqDomainEventDeserializer } from '@shared/infrastructure/rabbitmq/serializer/rabbitmq-domain-event-deserializer';

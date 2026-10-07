@@ -1,5 +1,5 @@
 import { DomainEvent } from '@shared/domain/events/domain-event';
-import { DomainEventClass } from '@shared/application/events/domain-event-consumer';
+import { DomainEventClass } from '@shared/infrastructure/rabbitmq/domain-event-consumer';
 import { Message } from 'amqplib';
 
 export class RabbitmqDomainEventDeserializer {
