@@ -26,6 +26,9 @@
       "@auth/*": [
         "./src/auth/*"
       ],
+      "@users/*": [
+        "./src/users/*"
+      ],
       "@shared/*": [
         "./libs/shared/src/*"
       ]
